@@ -9,6 +9,32 @@ let snake;
 let fruit;
 let score = 0;
 let intervalId;
+let maze = [];
+
+function generateMaze() {
+  maze = [];
+  for (let i = 0; i < rows; i++) {
+    maze[i] = [];
+    for (let j = 0; j < columns; j++) {
+      if (i === 0 || i === rows - 1 || j === 0 || j === columns - 1) {
+        maze[i][j] = 1;
+      } else {
+        maze[i][j] = Math.random() < 0.1 ? 1 : 0;
+      }
+    }
+  }
+}
+
+function drawMaze() {
+  ctx.fillStyle = '#000';
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < columns; j++) {
+      if (maze[i][j] === 1) {
+        ctx.fillRect(j * scale, i * scale, scale, scale);
+      }
+    }
+  }
+}
 
 (function setup() {
   snake = new Snake();
@@ -18,6 +44,10 @@ let intervalId;
 
   intervalId = window.setInterval(() => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (score % 10 === 0 && score !== 0) {
+      generateMaze();
+    }
+    drawMaze();
     fruit.draw();
     snake.update();
     snake.checkCollision();
@@ -85,6 +115,18 @@ function Snake() {
   
 
   this.checkCollision = function() {
+
+    // Check collision with maze walls
+  if (maze[Math.floor(this.y / scale)][Math.floor(this.x / scale)] === 1) {
+    this.x = 0;
+    this.y = 0;
+    this.xSpeed = scale;
+    this.ySpeed = 0;
+    this.tail = [];
+    score = 0;
+    document.getElementById('score').textContent = `Score: ${score}`;
+    gameOver();
+  }
     // Si la cabeza de la serpiente colisiona con una pared, se reinicia el juego
     if (this.x >= canvas.width || this.x < 0 || this.y >= canvas.height || this.y < 0) {
       this.x = 0;
